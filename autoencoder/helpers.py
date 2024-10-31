@@ -1,9 +1,11 @@
 import torch
 import torch.nn as nn
+import optuna
 from torch.utils.data import DataLoader
 from typing import Callable
+from optuna.trial import TrialState
 
-def train(model: nn.Module, train_dl: DataLoader, test_dl: DataLoader, loss_fn: Callable, optimizer: Callable, epochs: int, run = None) -> dict:
+def train(model: nn.Module, train_dl: DataLoader, test_dl: DataLoader, loss_fn: Callable, optimizer: Callable, epochs: int, **kwargs) -> dict:
     """
     Trains the given model using the provided training and testing data loaders, loss function, and optimizer.
     Args:
@@ -13,13 +15,16 @@ def train(model: nn.Module, train_dl: DataLoader, test_dl: DataLoader, loss_fn: 
         loss_fn (Callable): Loss function to be used for training.
         optimizer (Callable): Optimizer to be used for training.
         epochs (int): Number of epochs to train the model.
-        run (optional): An optional object for logging metrics (e.g., a run object from a logging library).
+        **kwargs: Additional keyword arguments (e.g., a run object for logging metrics).
     Returns:
         dict: A dictionary containing the training and testing loss history with keys 'train_loss' and 'test_loss'.
     """
     
     test_loss_history = []
     train_loss_history = []
+    run = kwargs.get('run', None)
+    trail : optuna.Trial = kwargs.get('trail', None)
+    
     for i in range(epochs):
         print(f"Epoch {i+1}\n-------------------------------")
         train_loss = _train_step(train_dl, model, loss_fn, optimizer)
@@ -28,6 +33,10 @@ def train(model: nn.Module, train_dl: DataLoader, test_dl: DataLoader, loss_fn: 
             run.log({"train_loss": train_loss, "test_loss": test_loss})
         test_loss_history.append(test_loss)
         train_loss_history.append(train_loss)
+        if trail is not None:
+            trail.report(test_loss, i)
+            if trail.should_prune():
+                raise optuna.TrialPruned()
     print("Done!")
     return {'train_loss': train_loss_history, 'test_loss': test_loss_history}
 

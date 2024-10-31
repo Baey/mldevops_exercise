@@ -45,7 +45,7 @@ def main(embedding_dim: int, batch_size: int, learning_rate: float, weight_decay
         weight_decay = weight_decay
         )
     
-    history = train(model, train_dl, test_dl, loss_fn, optimizer, epochs, run)
+    history = train(model, train_dl, test_dl, loss_fn, optimizer, epochs, run=run)
     run.finish()
 
     sample_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
@@ -72,14 +72,16 @@ def main(embedding_dim: int, batch_size: int, learning_rate: float, weight_decay
     axes[0, 0].set_title('Original Images')
     axes[1, 0].set_title('Reconstructed Images')
     
-    if not os.path.exists('outputs'):
-        os.makedirs('outputs')
-    plt.savefig(os.path.join('outputs', 'reconstructed_images.png'))
+    if not os.path.exists('temp'):
+        os.makedirs('temp')
+    if not os.path.exists(os.path.join('temp', 'outputs')):
+        os.makedirs(os.path.join('temp', 'outputs'))
+    plt.savefig(os.path.join('temp', 'outputs', 'reconstructed_images.png'))
 
     current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    if not os.path.exists('models'):
-        os.makedirs('models')
-    torch.save(model.state_dict(), os.path.join('models', f'ae_{current_time}.pt'))
+    if not os.path.exists(os.path.join('temp', 'models')):
+        os.makedirs(os.path.join('temp', 'models'))
+    torch.save(model.state_dict(), os.path.join('temp', 'models', f'ae_{current_time}.pt'))
 
 
 if __name__ == '__main__':
