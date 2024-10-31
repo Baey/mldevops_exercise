@@ -1,0 +1,5 @@
+params:
+  epochs: 43
+  batch_size: 95
+  learning_rate: 0.0002155637378493611
+  weight_decay: 7.999197585463515e-05

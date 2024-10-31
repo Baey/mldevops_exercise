@@ -9,10 +9,10 @@ __pycache__/
 # Datasets
 *.gz
 raw/
+data/
 
-# Models and output files
-models/
-output/
+# Temporary files
+temp/
 
 # Wandb logs
 wandb/
