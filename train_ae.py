@@ -1,8 +1,8 @@
+import os
 import torch
 import wandb
 import datetime
 import argparse
-import numpy as np
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torchvision import datasets
@@ -13,7 +13,7 @@ from autoencoder import train
 
 
 def main(embedding_dim: int, batch_size: int, learning_rate: float, weight_decay: float, epochs: int, device: str):
-    wandb.init(
+    run = wandb.init(
         # set the wandb project where this run will be logged
         project="MNIST-Autoencoder",
         # track hyperparameters and run metadata
@@ -45,17 +45,8 @@ def main(embedding_dim: int, batch_size: int, learning_rate: float, weight_decay
         weight_decay = weight_decay
         )
     
-    history = train(model, train_dl, test_dl, loss_fn, optimizer, epochs)
-    wandb.finish()
-
-    plt.plot(history['train_loss'], label='train')
-    plt.plot(history['test_loss'], label='test')
-    plt.legend()
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.title('Loss')
-    plt.xticks(np.arange(0, epochs, 1))
-    plt.show()
+    history = train(model, train_dl, test_dl, loss_fn, optimizer, epochs, run)
+    run.finish()
 
     sample_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
     sample_batch = next(iter(sample_loader))
@@ -80,11 +71,15 @@ def main(embedding_dim: int, batch_size: int, learning_rate: float, weight_decay
 
     axes[0, 0].set_title('Original Images')
     axes[1, 0].set_title('Reconstructed Images')
-
-    plt.show()
+    
+    if not os.path.exists('outputs'):
+        os.makedirs('outputs')
+    plt.savefig(os.path.join('outputs', 'reconstructed_images.png'))
 
     current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    torch.save(model.state_dict(), f'model_ae_{current_time}.pth')
+    if not os.path.exists('models'):
+        os.makedirs('models')
+    torch.save(model.state_dict(), os.path.join('models', f'ae_{current_time}.pt'))
 
 
 if __name__ == '__main__':

@@ -10,6 +10,13 @@ __pycache__/
 *.gz
 raw/
 
+# Models and output files
+models/
+output/
+
+# Wandb logs
+wandb/
+
 # Distribution / packaging
 .Python
 build/
